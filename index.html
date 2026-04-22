@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lagacy Cloud - Premium Minecraft Hosting | Babydoll Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --neon-green: #00ff88;
+            --neon-purple: #b026ff;
+            --deep-purple: #1a0033;
+            --black: #0a0a0a;
+            --glass-bg: rgba(20, 10, 40, 0.4);
+            --glass-border: rgba(176, 38, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--black);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ===== LOADING SCREEN ===== */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--black);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-purple);
+            animation: logoPulse 2s ease-in-out infinite;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-purple));
+            border-radius: 2px;
+            animation: loadFill 2.5s ease-out forwards;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        @keyframes loadFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 3px;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(176, 38, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(176, 38, 255, 0.1) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-2%, 2%) scale(1.02); }
+            66% { transform: translate(2%, -1%) scale(0.98); }
+        }
+
+        /* Floating particles */
+        .particles-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--neon-green);
+            animation: floatUp linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Minecraft blocks floating */
+        .mc-block {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.05);
+            animation: mcFloat 15s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .mc-block::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 1px solid rgba(176, 38, 255, 0.2);
+            transform: translateZ(-10px);
+        }
+
+        @keyframes mcFloat {
+            0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+            25% { transform: translateY(-30px) rotateX(15deg) rotateY(45deg); }
+            50% { transform: translateY(-15px) rotateX(-10deg) rotateY(90deg); }
+            75% { transform: translateY(-40px) rotateX(20deg) rotateY(135deg); }
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(176, 38, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(10, 10, 10, 0.95);
+            padding: 0.7rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-decoration: none;
+            text-shadow: 0 0 10px var(--neon-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-purple));
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .music-btn, .discord-btn-nav {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .music-btn:hover, .discord-btn-nav:hover {
+            background: var(--neon-green);
+            color: var(--black);
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        .discord-btn-nav {
+            border-color: #5865F2;
+            color: #5865F2;
+        }
+
+        .discord-btn-nav:hover {
+            background: #5865F2;
+            color: white;
+            box-shadow: 0 0 20px #5865F2;
+        }
+
+        .user-profile {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+        }
+
+        .user-profile img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+        }
+
+        .user-profile span {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            color: var(--neon-green);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-green));
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            animation: badgeGlow 3s ease-in-out infinite;
+            text-transform: uppercase;
+        }
+
+        @keyframes badgeGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(176, 38, 255, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.5); }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--neon-green), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleShine 4s ease-in-out infinite;
+        }
+
+        @keyframes titleShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .hero-subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 300;
+            color: var(--neon-purple);
+            margin-bottom: 0.5rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .hero-edition {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: var(--neon-green);
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px var(--neon-green);
+            animation: editionPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes editionPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Countdown Timer */
+        .countdown-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 0 40px rgba(176, 38, 255, 0.2);
+        }
+
+        .countdown-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            min-width: 100px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .countdown-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            display: block;
+        }
+
+        .countdown-unit {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0.5rem;
+        }
+
+        /* CTA Buttons */
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-green), #00cc6a);
+            color: var(--black);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.6);
+        }
+
+        .btn-glow {
+            background: transparent;
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-purple);
+        }
+
+        .btn-glow:hover {
+            background: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 40px var(--neon-purple);
+            transform: translateY(-3px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .scroll-indicator i {
+            font-size: 2rem;
+            color: var(--neon-green);
+            opacity: 0.7;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* ===== FEATURES SECTION ===== */
+        .features {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4rem;
+            letter-spacing: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-purple));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--neon-green);
+            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.1);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-purple));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .feature-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--neon-green);
+        }
+
+        .feature-card p {
+            color: rgba(255,255,255,0.7);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* ===== DISCORD SECTION ===== */
+        .discord-section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .discord-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .discord-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.1) 0%, transparent 70%);
+            animation: discordGlow 5s ease-in-out infinite;
+        }
+
+        @keyframes discordGlow {
+            0%, 100% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .discord-logo {
+            font-size: 4rem;
+            color: #5865F2;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .discord-container h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .discord-container p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            line-height: 1.7;
+        }
+
+        .discord-btn {
+            background: #5865F2;
+            color: white;
+            padding: 1rem 3rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .discord-btn:hover {
+            background: #4752C4;
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(88, 101, 242, 0.5);
+        }
+
+        /* Discord Login */
+        .discord-login-area {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .discord-login-btn {
+            background: transparent;
+            border: 2px solid #5865F2;
+            color: #5865F2;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .discord-login-btn:hover {
+            background: #5865F2;
+            color: white;
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.4);
+        }
+
+        .discord-user-info {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .discord-user-info img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #5865F2;
+        }
+
+        .discord-user-info span {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #5865F2;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid rgba(176, 38, 255, 0.2);
+            padding: 4rem 2rem 2rem;
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: rgba(255,255,255,0.6);
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .footer-links h4 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--neon-purple);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links a {
+            display: block;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--neon-green);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+        }
+
+        /* ===== ANIMATED ELEMENTS ===== */
+        .glow-line {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--neon-green), transparent);
+            animation: glowLineMove 3s ease-in-out infinite;
+        }
+
+        @keyframes glowLineMove {
+            0%, 100% { opacity: 0; transform: translateY(-50px); }
+            50% { opacity: 1; transform: translateY(50px); }
+        }
+
+        /* Parallax layers */
+        .parallax-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Reveal animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .countdown {
+                gap: 0.8rem;
+            }
+
+            .countdown-item {
+                min-width: 70px;
+                padding: 1rem;
+            }
+
+            .countdown-value {
+                font-size: 1.8rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .discord-container {
+                padding: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hamburger menu for mobile */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--neon-green);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        /* ===== CUSTOM SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--neon-green), var(--neon-purple));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-green);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <i class="fas fa-cube"></i> LAGACY CLOUD
+        </div>
+        <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+        </div>
+        <div class="loading-text">INITIALIZING PREMIUM HOSTING...</div>
+    </div>
+
+    <!-- Background -->
+    <div class="bg-container">
+        <div class="bg-gradient"></div>
+        <div class="particles-container" id="particles"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-cube"></i> LAGACY CLOUD
+            </a>
+            <div class="nav-links">
+                <a href="#hero">Home</a>
+                <a href="#features">Features</a>
+                <a href="#discord">Discord</a>
+                <button class="music-btn" id="musicBtn" onclick="toggleMusic()">
+                    <i class="fas fa-music"></i> <span id="musicText">Play Music</span>
+                </button>
+                <a href="https://discord.gg/vZd9cxRbmC" target="_blank" class="discord-btn-nav">
+                    <i class="fab fa-discord"></i> Join Discord
+                </a>
+                <div class="user-profile" id="userProfile">
+                    <img src="" alt="Avatar" id="userAvatar">
+                    <span id="userName">User</span>
+                </div>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">Coming Soon</div>
+            <h1>Lagacy Cloud</h1>
+            <div class="hero-subtitle">Premium Minecraft Hosting</div>
+            <div class="hero-edition">✨ Babydoll Edition ✨</div>
+
+            <div class="countdown-container">
+                <div class="countdown-label">Launching In</div>
+                <div class="countdown" id="countdown">
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="days">07</span>
+                        <div class="countdown-unit">Days</div>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="hours">00</span>
+                        <div class="countdown-unit">Hours</div>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="minutes">00</span>
+                        <div class="countdown-unit">Minutes</div>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="seconds">00</span>
+                        <div class="countdown-unit">Seconds</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-buttons">
+                <a href="#features" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> Explore Features
+                </a>
+                <a href="https://discord.gg/vZd9cxRbmC" target="_blank" class="btn btn-glow">
+                    <i class="fab fa-discord"></i> Join Discord
+                </a>
+            </div>
+        </div>
+
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2 class="section-title reveal">Premium Features</h2>
+        <p class="section-subtitle reveal">Experience hosting like never before</p>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Lightning Fast</h3>
+                <p>Powered by NVMe SSDs and high-frequency CPUs, our servers deliver unmatched performance with sub-20ms latency for the smoothest gameplay experience.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>DDoS Protection</h3>
+                <p>Enterprise-grade DDoS mitigation up to 480Gbps. Your server stays online and protected against any attack, 24/7/365.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3>Global Network</h3>
+                <p>Strategically located data centers across North America, Europe, and Asia. Choose the closest location for optimal ping.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>One-Click Mods</h3>
+                <p>Install popular modpacks like Fabric, Forge, Paper, and Purpur instantly. Custom JAR support for advanced users.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>24/7 Support</h3>
+                <p>Our expert team is always ready to help. Average response time under 5 minutes via Discord and ticket system.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Real-Time Monitoring</h3>
+                <p>Advanced dashboard with live metrics, player analytics, and automated backups. Full control at your fingertips.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Discord Section -->
+    <section class="discord-section" id="discord">
+        <div class="discord-container reveal">
+            <i class="fab fa-discord discord-logo"></i>
+            <h2>Join Our Community</h2>
+            <p>Connect with thousands of Minecraft enthusiasts, get instant support, and be the first to know when we launch. Our Discord community is the heart of Lagacy Cloud.</p>
+
+            <a href="https://discord.gg/vZd9cxRbmC" target="_blank" class="discord-btn">
+                <i class="fab fa-discord"></i> Join Discord Server
+            </a>
+
+            <div class="discord-login-area">
+                <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.5);">Or log in with your Discord account</p>
+                <button class="discord-login-btn" id="discordLoginBtn" onclick="loginWithDiscord()">
+                    <i class="fab fa-discord"></i> Login with Discord
+                </button>
+                <div class="discord-user-info" id="discordUserInfo">
+                    <img src="" alt="Avatar" id="discordAvatar">
+                    <span id="discordUsername">User</span>
+                    <button class="logout-btn" onclick="logoutDiscord()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3><i class="fas fa-cube"></i> Lagacy Cloud</h3>
+                <p>Premium Minecraft hosting reimagined. Built for gamers, by gamers. Experience the future of server hosting with cutting-edge technology and unmatched performance.</p>
+                <div class="social-links">
+                    <a href="https://discord.gg/vZd9cxRbmC" target="_blank"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Careers</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Hosting</h4>
+                <a href="#">Minecraft Java</a>
+                <a href="#">Minecraft Bedrock</a>
+                <a href="#">Modpacks</a>
+                <a href="#">Pricing</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">Knowledge Base</a>
+                <a href="#">Status Page</a>
+                <a href="https://discord.gg/vZd9cxRbmC" target="_blank">Discord Support</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p> 2024 Lagacy Cloud. All rights reserved. | Premium Minecraft Hosting</p>
+        </div>
+    </footer>
+
+    <!-- Audio Element -->
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // ===== LOADING SCREEN =====
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2500);
+        });
+
+        // ===== PARTICLES =====
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.width = (Math.random() * 4 + 2) + 'px';
+                particle.style.height = particle.style.width;
+
+                // Random color between green and purple
+                const isGreen = Math.random() > 0.5;
+                particle.style.background = isGreen ? 'var(--neon-green)' : 'var(--neon-purple)';
+                particle.style.boxShadow = `0 0 6px ${isGreen ? 'var(--neon-green)' : 'var(--neon-purple)'}`;
+
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ===== MINECRAFT BLOCKS =====
+        function createMCBlocks() {
+            const container = document.querySelector('.bg-container');
+            const blockCount = 8;
+
+            for (let i = 0; i < blockCount; i++) {
+                const block = document.createElement('div');
+                block.className = 'mc-block';
+                block.style.left = Math.random() * 90 + '%';
+                block.style.top = Math.random() * 90 + '%';
+                block.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                block.style.animationDelay = Math.random() * 5 + 's';
+                block.style.width = (Math.random() * 30 + 20) + 'px';
+                block.style.height = block.style.width;
+                container.appendChild(block);
+            }
+        }
+        createMCBlocks();
+
+        // ===== COUNTDOWN TIMER =====
+        function updateCountdown() {
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + 7);
+            targetDate.setHours(0, 0, 0, 0);
+
+            function calculate() {
+                const now = new Date();
+                const diff = targetDate - now;
+
+                if (diff <= 0) {
+                    document.getElementById('days').textContent = '00';
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            calculate();
+            setInterval(calculate, 1000);
+        }
+        updateCountdown();
+
+        // ===== MUSIC =====
+        let musicPlaying = false;
+        const music = document.getElementById('bgMusic');
+        music.volume = 0.15;
+
+        function toggleMusic() {
+            if (musicPlaying) {
+                music.pause();
+                document.getElementById('musicText').textContent = 'Play Music';
+                document.getElementById('musicBtn').innerHTML = '<i class="fas fa-music"></i> <span id="musicText">Play Music</span>';
+            } else {
+                music.play().catch(e => console.log('Audio play failed:', e));
+                document.getElementById('musicText').textContent = 'Mute Music';
+                document.getElementById('musicBtn').innerHTML = '<i class="fas fa-volume-up"></i> <span id="musicText">Mute Music</span>';
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        // ===== DISCORD LOGIN =====
+        function loginWithDiscord() {
+            // Simulated Discord OAuth flow
+            const width = 500;
+            const height = 700;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            // In production, this would redirect to Discord OAuth
+            // For demo, we'll simulate a successful login
+            const demoUser = {
+                username: 'MinecraftPro',
+                avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+                id: '123456789'
+            };
+
+            // Show simulated login
+            document.getElementById('discordLoginBtn').style.display = 'none';
+            document.getElementById('discordUserInfo').style.display = 'flex';
+            document.getElementById('discordAvatar').src = demoUser.avatar;
+            document.getElementById('discordUsername').textContent = demoUser.username;
+
+            // Also update navbar
+            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('userAvatar').src = demoUser.avatar;
+            document.getElementById('userName').textContent = demoUser.username;
+
+            // Store in localStorage
+            localStorage.setItem('discord_user', JSON.stringify(demoUser));
+        }
+
+        function logoutDiscord() {
+            localStorage.removeItem('discord_user');
+            document.getElementById('discordLoginBtn').style.display = 'inline-flex';
+            document.getElementById('discordUserInfo').style.display = 'none';
+            document.getElementById('userProfile').style.display = 'none';
+        }
+
+        // Check for stored user on load
+        window.addEventListener('load', () => {
+            const stored = localStorage.getItem('discord_user');
+            if (stored) {
+                const user = JSON.parse(stored);
+                document.getElementById('discordLoginBtn').style.display = 'none';
+                document.getElementById('discordUserInfo').style.display = 'flex';
+                document.getElementById('discordAvatar').src = user.avatar;
+                document.getElementById('discordUsername').textContent = user.username;
+                document.getElementById('userProfile').style.display = 'flex';
+                document.getElementById('userAvatar').src = user.avatar;
+                document.getElementById('userName').textContent = user.username;
+            }
+        });
+
+        // ===== SCROLL ANIMATIONS =====
+        function revealOnScroll() {
+            const reveals = document.querySelectorAll('.reveal');
+
+            reveals.forEach(element => {
+                const windowHeight = window.innerHeight;
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 100;
+
+                if (elementTop < windowHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll(); // Initial check
+
+        // ===== NAVBAR SCROLL EFFECT =====
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ===== SMOOTH SCROLL =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ===== PARALLAX EFFECT =====
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.mc-block');
+
+            parallaxElements.forEach((el, index) => {
+                const speed = 0.5 + (index * 0.1);
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // ===== MOBILE MENU =====
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+            navLinks.style.position = 'absolute';
+            navLinks.style.top = '100%';
+            navLinks.style.left = '0';
+            navLinks.style.right = '0';
+            navLinks.style.flexDirection = 'column';
+            navLinks.style.background = 'rgba(10, 10, 10, 0.95)';
+            navLinks.style.padding = '1rem';
+            navLinks.style.backdropFilter = 'blur(20px)';
+        }
+
+        // ===== MOUSE GLOW EFFECT =====
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.querySelector('.bg-gradient');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            cursor.style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+        });
+
+        // ===== SOUND EFFECTS (Optional) =====
+        function playHoverSound() {
+            // Create a subtle beep
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Add hover sound to buttons
+        document.querySelectorAll('.btn, .feature-card, .discord-btn').forEach(el => {
+            el.addEventListener('mouseenter', playHoverSound);
+        });
+    </script>
+</body>
+</html>
